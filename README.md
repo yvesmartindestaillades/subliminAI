@@ -11,6 +11,13 @@ llm replicate add \
   --chat --alias llama70b
 ```
 
+Export API tokens:
+
+```
+export REPLICATE_API_TOKEN=r8_*************************************
+
+```
+
 ## Test installation
 
 ```bash
