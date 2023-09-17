@@ -1,1 +1,4 @@
 .env
+**.png
+.DS_Store
+**.pyc
