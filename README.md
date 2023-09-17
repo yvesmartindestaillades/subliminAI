@@ -5,10 +5,10 @@
 ```bash
 pip install -r requirements.txt
 llm install llm-replicate
-llm keys set replicate # set your key
-llm replicate add \
-  replicate/llama70b-v2-chat \
-  --chat --alias llama70b
+llm keys set replicate
+llm replicate add a16z-infra/llama13b-v2-chat \
+  --chat --alias llama2
+
 ```
 
 Export API tokens:
