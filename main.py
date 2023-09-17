@@ -1,5 +1,6 @@
 from src.generate_conditional_image import generate_conditional_image
 from src.text2image import text2image
+from src.prompt_variation import prompt_variation
 
 
 if __name__ == "__main__":
@@ -8,8 +9,16 @@ if __name__ == "__main__":
     # Save the image
     image.save("hidden-message.png")
 
-    generate_conditional_image(
-        prompt="Capture the majesty of natural design within a setting filled with towering mountains and serpentine waterways.",
-        input_image_path="hidden-message.png",
-        output_image_path="generated_image1.png",
-    )
+    user_prompt = "Capture the majesty of natural design within a setting filled with towering mountains and serpentine waterways."
+
+    prompt_variations = prompt_variation(user_prompt, n_variations=2)
+
+    for idx, prompt in enumerate(prompt_variations):
+        # generate image
+        generate_conditional_image(
+            prompt=prompt,
+            input_image_path="hidden-message.png",
+            output_image_path=f"generated_image_{idx}.png",
+        )
+
+    # morphing between images
