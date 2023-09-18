@@ -45,6 +45,7 @@
 #
 #######################################################
 
+from typing import List, Tuple
 import cv2, time, argparse, ast
 from scipy.ndimage import median_filter
 from scipy.spatial import Delaunay
@@ -59,111 +60,100 @@ import numpy as np
 #######################################################
 
 
-def loadTriangles(limg, rimg, featuregridsize, showfeatures) -> tuple:
-    leftTriList = []
-    rightTriList = []
-
-    lrlists = autofeaturepoints(limg, rimg, featuregridsize, showfeatures)
-
-    leftArray = np.array(lrlists[0], np.float64)
-    rightArray = np.array(lrlists[1], np.float64)
-    delaunayTri = Delaunay(leftArray)
-
-    leftNP = leftArray[delaunayTri.simplices]
-    rightNP = rightArray[delaunayTri.simplices]
-
-    for x, y in zip(leftNP, rightNP):
-        leftTriList.append(Triangle(x))
-        rightTriList.append(Triangle(y))
-
-    return leftTriList, rightTriList
-
-
 class Triangle:
-    def __init__(self, vertices):
-        if isinstance(vertices, np.ndarray) == 0:
+    def __init__(self, vertices: np.ndarray) -> None:
+        if not isinstance(vertices, np.ndarray):
             raise ValueError("Input argument is not of type np.array.")
         if vertices.shape != (3, 2):
             raise ValueError("Input argument does not have the expected dimensions.")
         if vertices.dtype != np.float64:
             raise ValueError("Input argument is not of type float64.")
-        self.vertices = vertices
-        self.minX = int(self.vertices[:, 0].min())
-        self.maxX = int(self.vertices[:, 0].max())
-        self.minY = int(self.vertices[:, 1].min())
-        self.maxY = int(self.vertices[:, 1].max())
 
-    def getPoints(self):
-        xList = range(self.minX, self.maxX + 1)
-        yList = range(self.minY, self.maxY + 1)
-        emptyList = list((x, y) for x in xList for y in yList)
+        self.vertices: np.ndarray = vertices
+        self.minX: int = int(self.vertices[:, 0].min())
+        self.maxX: int = int(self.vertices[:, 0].max())
+        self.minY: int = int(self.vertices[:, 1].min())
+        self.maxY: int = int(self.vertices[:, 1].max())
 
-        points = np.array(emptyList, np.float64)
+    def get_points(self) -> np.ndarray:
+        x_list = range(self.minX, self.maxX + 1)
+        y_list = range(self.minY, self.maxY + 1)
+        empty_list = list((x, y) for x in x_list for y in y_list)
+
+        points = np.array(empty_list, np.float64)
         p = Path(self.vertices)
         grid = p.contains_points(points)
         mask = grid.reshape(self.maxX - self.minX + 1, self.maxY - self.minY + 1)
 
-        trueArray = np.where(np.array(mask) == True)
-        coordArray = np.vstack(
+        true_array = np.where(mask)
+        coord_array = np.vstack(
             (
-                trueArray[0] + self.minX,
-                trueArray[1] + self.minY,
-                np.ones(trueArray[0].shape[0]),
+                true_array[0] + self.minX,
+                true_array[1] + self.minY,
+                np.ones(true_array[0].shape[0]),
             )
         )
 
-        return coordArray
+        return coord_array
+
+
+def load_triangles(
+    limg: np.ndarray, rimg: np.ndarray, feature_grid_size: int, show_features: bool
+) -> Tuple[List[Triangle], List[Triangle]]:
+    left_tri_list: List[Triangle] = []
+    right_tri_list: List[Triangle] = []
+
+    lrlists = auto_feature_points(limg, rimg, feature_grid_size, show_features)
+
+    left_array = np.array(lrlists[0], np.float64)
+    right_array = np.array(lrlists[1], np.float64)
+    delaunay_tri = Delaunay(left_array)
+
+    left_np = left_array[delaunay_tri.simplices]
+    right_np = right_array[delaunay_tri.simplices]
+
+    for x, y in zip(left_np, right_np):
+        left_tri_list.append(Triangle(x))
+        right_tri_list.append(Triangle(y))
+
+    return left_tri_list, right_tri_list
 
 
 class Morpher:
-    def __init__(self, leftImage, leftTriangles, rightImage, rightTriangles):
-        if type(leftImage) != np.ndarray:
-            raise TypeError("Input leftImage is not an np.ndarray")
-        if leftImage.dtype != np.uint8:
-            raise TypeError("Input leftImage is not of type np.uint8")
-        if type(rightImage) != np.ndarray:
-            raise TypeError("Input rightImage is not an np.ndarray")
-        if rightImage.dtype != np.uint8:
-            raise TypeError("Input rightImage is not of type np.uint8")
-        if type(leftTriangles) != list:
-            raise TypeError("Input leftTriangles is not of type List")
-        for j in leftTriangles:
-            if isinstance(j, Triangle) == 0:
-                raise TypeError(
-                    "Element of input leftTriangles is not of Class Triangle"
-                )
-        if type(rightTriangles) != list:
-            raise TypeError("Input leftTriangles is not of type List")
-        for k in rightTriangles:
-            if isinstance(k, Triangle) == 0:
-                raise TypeError(
-                    "Element of input rightTriangles is not of Class Triangle"
-                )
-        self.leftImage = np.ndarray.copy(leftImage)
-        self.leftTriangles = leftTriangles  # Not of type np.uint8
-        self.rightImage = np.ndarray.copy(rightImage)
-        self.rightTriangles = rightTriangles  # Not of type np.uint8
-        self.leftInterpolation = RectBivariateSpline(
-            np.arange(self.leftImage.shape[0]),
-            np.arange(self.leftImage.shape[1]),
-            self.leftImage,
-        )  # , kx=2, ky=2)
-        self.rightInterpolation = RectBivariateSpline(
-            np.arange(self.rightImage.shape[0]),
-            np.arange(self.rightImage.shape[1]),
-            self.rightImage,
-        )  # , kx=2, ky=2)
+    def __init__(
+        self,
+        left_image: np.ndarray,
+        left_triangles: List[Triangle],
+        right_image: np.ndarray,
+        right_triangles: List[Triangle],
+    ) -> None:
+        self.left_image = np.ndarray.copy(left_image)
+        self.left_triangles = left_triangles
+        self.right_image = np.ndarray.copy(right_image)
+        self.right_triangles = right_triangles
 
-    def getImageAtAlpha(self, alpha, smoothMode):
-        for leftTriangle, rightTriangle in zip(self.leftTriangles, self.rightTriangles):
-            self.interpolatePoints(leftTriangle, rightTriangle, alpha)
-            # print(".", end="") # TODO: this doesn't work as intended
+        self.left_interpolation = RectBivariateSpline(
+            np.arange(self.left_image.shape[0]),
+            np.arange(self.left_image.shape[1]),
+            self.left_image,
+        )
+        self.right_interpolation = RectBivariateSpline(
+            np.arange(self.right_image.shape[0]),
+            np.arange(self.right_image.shape[1]),
+            self.right_image,
+        )
 
-        blendARR = (1 - alpha) * self.leftImage + alpha * self.rightImage
-        blendARR = blendARR.astype(np.uint8)
-        return blendARR
+    def get_image_at_alpha(self, alpha: float, smooth_mode: int) -> np.ndarray:
+        for left_triangle, right_triangle in zip(
+            self.left_triangles, self.right_triangles
+        ):
+            self.interpolate_points(left_triangle, right_triangle, alpha)
 
-    def interpolatePoints(self, leftTriangle, rightTriangle, alpha):
+        blend_arr = (1 - alpha) * self.left_image + alpha * self.right_image
+        blend_arr = blend_arr.astype(np.uint8)
+        return blend_arr
+
+    def interpolate_points(self, leftTriangle, rightTriangle, alpha):
         targetTriangle = Triangle(
             leftTriangle.vertices
             + (rightTriangle.vertices - leftTriangle.vertices) * alpha
@@ -249,7 +239,7 @@ class Morpher:
         )
         leftinvH = np.linalg.inv(leftH)
         rightinvH = np.linalg.inv(rightH)
-        targetPoints = targetTriangle.getPoints()  # TODO: ~ 17-18% of runtime
+        targetPoints = targetTriangle.get_points()  # TODO: ~ 17-18% of runtime
 
         leftSourcePoints = np.transpose(np.matmul(leftinvH, targetPoints))
         rightSourcePoints = np.transpose(np.matmul(rightinvH, targetPoints))
@@ -258,15 +248,17 @@ class Morpher:
         for x, y, z in zip(
             targetPoints, leftSourcePoints, rightSourcePoints
         ):  # TODO: ~ 53% of runtime
-            self.leftImage[int(x[1])][int(x[0])] = self.leftInterpolation(y[1], y[0])
-            self.rightImage[int(x[1])][int(x[0])] = self.rightInterpolation(z[1], z[0])
+            self.left_image[int(x[1])][int(x[0])] = self.left_interpolation(y[1], y[0])
+            self.right_image[int(x[1])][int(x[0])] = self.right_interpolation(
+                z[1], z[0]
+            )
 
 
 ########################################################################################################
 
 
 # Automatic feature points
-def autofeaturepoints(leimg, riimg, featuregridsize, showfeatures):
+def auto_feature_points(leimg, riimg, featuregridsize, showfeatures):
     result = [[], []]
     for idx, img in enumerate([leimg, riimg]):
         try:
@@ -351,7 +343,7 @@ def initmorph(startimgpath, endimgpath, featuregridsize, subpixel, showfeatures,
     rightImageARR = np.asarray(rightImageRaw)
 
     # autofeaturepoints() is called in loadTriangles()
-    triangleTuple = loadTriangles(
+    triangleTuple = load_triangles(
         leftImageRaw, rightImageRaw, featuregridsize, showfeatures
     )
 
@@ -389,93 +381,87 @@ def initmorph(startimgpath, endimgpath, featuregridsize, subpixel, showfeatures,
 ####
 
 
-def morphprocess(mphs, framerate, outimgprefix, subpixel, smoothing):
-    global framecnt
+def save_morphed_frame(image: np.ndarray, frame_count: int, output_prefix: str) -> None:
+    filename = f"{output_prefix}{frame_count}.png"
+    cv2.imwrite(filename, image)
+    print(f"{filename} saved, dimensions {image.shape}")
 
-    # frame_0 is the starting image, so framecnt = _1
-    framecnt = framecnt + 1
 
-    # loop generate morph frames and save
-    for i in range(1, framerate):
-        timerstart = time.time()
-        alfa = i / framerate
+def apply_median_filter(image: np.ndarray, smoothing: int) -> np.ndarray:
+    return np.array(median_filter(image, smoothing))
 
-        # image calculation and smoothing BGR
-        if smoothing > 0:
-            outimage = np.dstack(
-                [
-                    np.array(
-                        median_filter(mphs[0].getImageAtAlpha(alfa, True), smoothing)
-                    ),
-                    np.array(
-                        median_filter(mphs[1].getImageAtAlpha(alfa, True), smoothing)
-                    ),
-                    np.array(
-                        median_filter(mphs[2].getImageAtAlpha(alfa, True), smoothing)
-                    ),
-                ]
-            )
-        else:
-            outimage = np.dstack(
-                [
-                    np.array(mphs[0].getImageAtAlpha(alfa, True)),
-                    np.array(mphs[1].getImageAtAlpha(alfa, True)),
-                    np.array(mphs[2].getImageAtAlpha(alfa, True)),
-                ]
-            )
 
-        # downscale image if subpixel calculation is enabled
+def generate_morphed_frame(
+    morphers: List[Morpher], alpha: float, smoothing: int
+) -> np.ndarray:
+    channels = [morpher.get_image_at_alpha(alpha, True) for morpher in morphers]
+
+    if smoothing > 0:
+        channels = [apply_median_filter(channel, smoothing) for channel in channels]
+
+    return np.dstack(channels)
+
+
+def morph_process(
+    morphers: List[Morpher],
+    frame_rate: int,
+    output_prefix: str,
+    subpixel: int,
+    smoothing: int,
+) -> None:
+    frame_count = 1
+
+    for i in range(1, frame_rate):
+        timer_start = time.time()
+        alpha = i / frame_rate
+
+        morphed_frame = generate_morphed_frame(morphers, alpha, smoothing)
+
         if subpixel > 1:
-            outimage = cv2.resize(
-                outimage,
-                (int(outimage.shape[1] / subpixel), int(outimage.shape[0] / subpixel)),
+            morphed_frame = cv2.resize(
+                morphed_frame,
+                (
+                    int(morphed_frame.shape[1] / subpixel),
+                    int(morphed_frame.shape[0] / subpixel),
+                ),
                 interpolation=cv2.INTER_CUBIC,
             )
 
-        # write file
-        filename = outimgprefix + str(framecnt) + ".png"
-        framecnt = framecnt + 1
-        cv2.imwrite(filename, outimage)
-        timerelapsed = time.time() - timerstart
-        usppx = 1000000 * timerelapsed / (outimage.shape[0] * outimage.shape[1])
-        print(
-            filename
-            + " saved, dimensions "
-            + str(outimage.shape)
-            + " time: "
-            + "{0:.2f}".format(timerelapsed)
-            + " s ; μs/pixel: "
-            + "{0:.2f}".format(usppx)
+        save_morphed_frame(morphed_frame, frame_count, output_prefix)
+        frame_count += 1
+
+        timer_elapsed = time.time() - timer_start
+        us_per_pixel = (
+            1_000_000
+            * timer_elapsed
+            / (morphed_frame.shape[0] * morphed_frame.shape[1])
         )
+        print(f"Time: {timer_elapsed:.2f} s; μs/pixel: {us_per_pixel:.2f}")
 
 
 ####
 
 
 def batchmorph(
-    imgs,
-    featuregridsize,
-    subpixel,
-    showfeatures,
-    framerate,
-    outimgprefix,
-    smoothing,
-    scale,
-):
-    global framecnt
-    framecnt = 0
+    imgs: List[str],
+    featuregridsize: int,
+    subpixel: int,
+    showfeatures: bool,
+    framerate: int,
+    outimgprefix: str,
+    smoothing: int,
+    scale: float,
+) -> None:
     totaltimerstart = time.time()
-    for idx in range(len(imgs) - 1):
-        morphprocess(
-            initmorph(
-                imgs[idx], imgs[idx + 1], featuregridsize, subpixel, showfeatures, scale
-            ),
-            framerate,
-            outimgprefix,
-            subpixel,
-            smoothing,
+
+    for idx, (img1, img2) in enumerate(zip(imgs[:-1], imgs[1:])):
+        morph_params = initmorph(
+            img1, img2, featuregridsize, subpixel, showfeatures, scale
         )
-    print("\r\nDone. Total time: " + str(time.time() - totaltimerstart) + " s ")
+        morph_process(morph_params, framerate, outimgprefix, subpixel, smoothing)
+
+    total_elapsed_time = time.time() - totaltimerstart
+    print(f"\r\nDone. Total time: {total_elapsed_time:.2f} s")
 
 
 ###############################################################################
