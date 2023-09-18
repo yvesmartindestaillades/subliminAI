@@ -4,11 +4,6 @@
 
 ```bash
 pip install -r requirements.txt
-llm install llm-replicate
-llm keys set replicate
-llm replicate add a16z-infra/llama13b-v2-chat \
-  --chat --alias llama2
-
 ```
 
 Export API tokens:
@@ -18,8 +13,20 @@ export REPLICATE_API_TOKEN=r8_*************************************
 
 ```
 
-## Test installation
+## Usage Examples
 
 ```bash
-llm -m llama2 "Ten great names for a pet pelican"
+python main.py
+```
+
+Will create the following output and image:
+
+```
+Generating a single image with text: If you can read this raise your hands
+prompt: A forest full of mystery and magic. Elves and fairies live here. A blue river with red stones.
+control_strength: 0.8
+```
+
+```bash
+python main.py -t "AI Arts & Crafts Hackathon" -p "Craft an artistic representation of a landscape graced by mountains and the flow of serene rivers." -n 3 -c 0.95
 ```

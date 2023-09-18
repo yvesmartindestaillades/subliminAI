@@ -2,6 +2,8 @@ import os, subprocess, replicate
 
 
 def prompt_variation(prompt, n_variations):
+    if n_variations <= 1:
+        return [prompt]
     # option 1
     # complete_prompt = f"""Generate {str(int(n_variations))} reformulations of the prompt delimited by 3 semicolons.
     # Keep the same style as the input, just make slight variations. Remove the semicolons from the output.
@@ -27,19 +29,21 @@ def prompt_variation(prompt, n_variations):
         input={"prompt": complete_prompt},
     )
 
-    # clean the response    
+    # clean the response
     response = "".join([i for i in response])
     response = response.split("\n")
-    
+
     # remove the prompt
     reformulations = []
     for item in response:
         if item.startswith("- "):
             reformulations.append(item[2:])
-            
-    # get the reformulations 
-    if not len(reformulations) == n_variations: #TODO: raise error
-        print(f"Expected {n_variations} reformulations, but got {len(reformulations)}")#. response: {response}")
+
+    # get the reformulations
+    if not len(reformulations) == n_variations:  # TODO: raise error
+        print(
+            f"Expected {n_variations} reformulations, but got {len(reformulations)}"
+        )  # . response: {response}")
 
     return reformulations
 
