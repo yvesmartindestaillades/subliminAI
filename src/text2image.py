@@ -1,9 +1,13 @@
 from PIL import Image, ImageDraw, ImageFont
+from os.path import dirname, abspath, join
+
+path = dirname(abspath(__file__))
+font_path = join(path, '..', 'fonts')
 
 FONTS = {
-    "arial": "fonts/arial.ttf",
-    "arialbd": "fonts/arialbd.ttf",
-    "arialbi": "fonts/arialbi.ttf",
+    "arial": join(font_path, 'arial.ttf'),
+    "arialbd": join(font_path, 'arialbd.ttf'),
+    "arialbi": join(font_path, 'arialbi.ttf'),
 }
 
 
