@@ -9,9 +9,9 @@ if __name__ == "__main__":
     # Save the image
     image.save("hidden-message.png")
 
-    user_prompt = "Capture the majesty of natural design within a setting filled with towering mountains and serpentine waterways."
+    user_prompt = "A beautiful italian landscape. Houses, trees, a river and a bridge."
 
-    prompt_variations = prompt_variation(user_prompt, n_variations=2)
+    prompt_variations = prompt_variation(user_prompt, n_variations=5)
 
     for idx, prompt in enumerate(prompt_variations):
         # generate image
