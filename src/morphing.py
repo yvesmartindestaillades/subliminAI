@@ -52,6 +52,7 @@ from scipy.spatial import Delaunay
 from scipy.interpolate import RectBivariateSpline
 from matplotlib.path import Path
 import numpy as np
+import os
 
 #######################################################
 #   https://github.com/ddowd97/Morphing
@@ -382,8 +383,18 @@ def initmorph(startimgpath, endimgpath, featuregridsize, subpixel, showfeatures,
 
 
 def save_morphed_frame(image: np.ndarray, frame_count: int, output_prefix: str) -> None:
+    # Create directory if it does not exist
+    directory = os.path.dirname(output_prefix)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Create the filename
     filename = f"{output_prefix}{frame_count}.png"
+
+    # Save the image
     cv2.imwrite(filename, image)
+
+    # Log the operation
     print(f"{filename} saved, dimensions {image.shape}")
 
 
@@ -464,115 +475,22 @@ def batchmorph(
     print(f"\r\nDone. Total time: {total_elapsed_time:.2f} s")
 
 
-###############################################################################
-
-mfeaturegridsize = 24  # number of image divisions on each axis, for example 5 creates 5x5 = 25 automatic feature points + 4 corners come automatically
-mframerate = 10  # number of transition frames to render + 1 ; for example 30 renders transiton frames 1..29
-moutprefix = "f"  # output image name prefix
-framecnt = 0  # frame counter
-msubpixel = 1  # int, min: 1, max: no hard limit, but 4 should be enough
-msmoothing = 0  # median_filter smoothing
-mshowfeatures = False  # render automatically detected features
-mscale = 0.5  # image scale
-
-# batch morph process
-# batchmorph(["f0.png","f30.png","f60.png","f90.png","f120.png","f150.png"],mfeaturegridsize,msubpixel,mshowfeatures,mframerate,moutprefix,msmoothing)
-
-# CLI arguments
-
-margparser = argparse.ArgumentParser(
-    description="Automatic Image Morphing https://github.com/jankovicsandras/autoimagemorph adapted from https://github.com/ddowd97/Morphing"
-)
-margparser.add_argument(
-    "-inframes",
-    default="",
-    required=True,
-    help="REQUIRED input filenames in a list, for example: -inframes ['f0.png','f30.png','f60.png']",
-)
-margparser.add_argument(
-    "-outprefix",
-    default="",
-    required=True,
-    help="REQUIRED output filename prefix, -outprefix f  will write/overwrite f1.png f2.png ...",
-)
-margparser.add_argument(
-    "-featuregridsize",
-    type=int,
-    default=mfeaturegridsize,
-    help="Number of image divisions on each axis, for example -featuregridsize 5 creates 25 automatic feature points. (default: %(default)s)",
-)
-margparser.add_argument(
-    "-framerate",
-    type=int,
-    default=mframerate,
-    help="Frames to render between each keyframe +1, for example -framerate 30 will render 29 frames between -inframes ['f0.png','f30.png'] (default: %(default)s)",
-)
-margparser.add_argument(
-    "-subpixel",
-    type=int,
-    default=msubpixel,
-    help="Subpixel calculation to avoid image artifacts, for example -subpixel 4 is good quality, but 16 times slower processing. (default: %(default)s)",
-)
-margparser.add_argument(
-    "-smoothing",
-    type=int,
-    default=msmoothing,
-    help="median_filter smoothing/blur to remove image artifacts, for example -smoothing 2 will blur lightly. (default: %(default)s)",
-)
-margparser.add_argument(
-    "-showfeatures",
-    action="store_true",
-    help="Flag to render feature points, for example -showfeatures",
-)
-margparser.add_argument(
-    "-scale",
-    type=float,
-    default=mscale,
-    help="Input scaling for preview, for example -scale 0.5 will halve both width and height, processing will be approx. 4x faster. (default: %(default)s)",
-)
-
-args = vars(margparser.parse_args())
-
-# arguments sanity check TODO
-
-if len(args["inframes"]) < 2:
-    print(
-        "ERROR: command line argument -inframes must be a string array with minimum 2 elements."
+def generate_morphing_between_images(
+    path_to_images: List[str],
+):
+    batchmorph(
+        imgs=path_to_images,
+        featuregridsize=20,
+        subpixel=1,
+        showfeatures=False,
+        framerate=10,
+        outimgprefix="morphing_output/morphed_",
+        smoothing=0,
+        scale=1.0,
     )
-    print(
-        "Example\r\n > python autoimagemorph.py -inframes ['frame0.png','frame30.png','frame60.png'] -outprefix frame "
+
+
+if __name__ == "__main__":
+    generate_morphing_between_images(
+        ["generated_image_0.png", "generated_image_1.png", "generated_image1.png"]
     )
-    quit()
-
-if len(args["outprefix"]) < 1:
-    print("ERROR: -outprefix (output filename prefix) must be specified.")
-    print(
-        "Example\r\n > python autoimagemorph.py -inframes ['frame0.png','frame30.png','frame60.png'] -outprefix frame "
-    )
-    quit()
-args["inframes"] = ast.literal_eval(args["inframes"])
-
-args["featuregridsize"] = int(args["featuregridsize"])
-
-args["subpixel"] = int(args["subpixel"])
-
-args["framerate"] = int(args["framerate"])
-
-args["smoothing"] = int(args["smoothing"])
-
-args["scale"] = float(args["scale"])
-
-print("User input: \r\n" + str(args))
-
-# processing
-
-batchmorph(
-    args["inframes"],
-    args["featuregridsize"],
-    args["subpixel"],
-    args["showfeatures"],
-    args["framerate"],
-    args["outprefix"],
-    args["smoothing"],
-    args["scale"],
-)
