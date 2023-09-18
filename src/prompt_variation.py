@@ -10,14 +10,13 @@ def prompt_variation(prompt, n_variations):
     # ;;;{prompt};;;"""
 
     # option 2
-    complete_prompt = f"""
-    Follow the instructions below:
     
-    step1: Generate {str(int(n_variations))} reformulations of the prompt delimited by 3 semicolons. The meaning should remain the same. 
+    
+    
+    complete_prompt = f"""Generate {str(int(n_variations))} reformulations of the prompt delimited by 3 semicolons. The meaning should remain the same. 
     Remove the semicolons from the output. Format the output as a list of sentences that start with a -. Don't explain the changes. 
     Return the reformulations only. Don't return the prompt. Don't say anything but the reformulations. 
-    
-    step2: Count the reformulations, and if there are not {str(int(n_variations))} reformulations, add some more.
+    Count the reformulations, and if there are not {str(int(n_variations))} reformulations, add some more.
     
     ;;;{prompt};;;"""
 
