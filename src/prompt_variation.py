@@ -1,4 +1,4 @@
-import os, subprocess
+import os, subprocess, replicate
 
 
 def prompt_variation(prompt, n_variations):
@@ -18,18 +18,25 @@ def prompt_variation(prompt, n_variations):
     ;;;{prompt};;;"""
 
     # get the output from the model using CLI
-    response = subprocess.check_output(["llm", "-m", "llama2", complete_prompt])
-    response = response.decode("utf-8")
-    response = response.split("\n")
+    response = replicate.run(
+        "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
+        input={"prompt": complete_prompt},
+    )
 
-    # get the reformulations
+    # clean the response    
+    response = "".join([i for i in response])
+    response = response.split("\n")
+    
+    # remove the prompt
     reformulations = []
-    for line in response:
-        if line.startswith("- "):
-            reformulations.append(line[2:])
+    for item in response:
+        if item.startswith("- "):
+            reformulations.append(item[2:])
+            
+    # get the reformulations
     assert (
         len(reformulations) == n_variations
-    ), f"Expected {n_variations} reformulations, but got {len(reformulations)}."
+    ), f"Expected {n_variations} reformulations, but got {len(reformulations)}. response: {response}"
 
     return reformulations
 
