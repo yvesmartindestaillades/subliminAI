@@ -48,8 +48,6 @@ number_of_frames: {number_of_frames}"""
             control_net_strength=control_strength,
         )
         images_for_morphing.append(out_name)
-        if idx > max_img:
-            break
 
     os.makedirs("out", exist_ok=True)
     # morphing between images
