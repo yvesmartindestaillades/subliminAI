@@ -2,6 +2,7 @@ from src.generate_conditional_image import generate_conditional_image
 from src.text2image import text2image
 from src.prompt_variation import prompt_variation
 from src.morphing import generate_morphing_between_images
+
 import shutil, os
 
 if __name__ == "__main__":
@@ -30,4 +31,4 @@ if __name__ == "__main__":
         images_for_morphing.append(out_name)
 
     # morphing between images
-    generate_morphing_between_images(images_for_morphing)
+    # generate_morphing_between_images(images_for_morphing)
