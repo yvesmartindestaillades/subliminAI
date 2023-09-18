@@ -45,6 +45,8 @@ def call_replicate_api(
                 "qrcode_background": "white",
                 "image": file,
                 "seed": 42,
+                "height": 512,
+                "width": 512,
                 "num_inference_steps": 40,
                 "controlnet_conditioning_scale": control_net_strength,
                 "qr_code_content": "https://www.youtube.com/watch?v=lW1RAYYs8RI",
