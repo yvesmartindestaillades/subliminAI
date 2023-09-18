@@ -15,7 +15,7 @@ def aggregate_images_to_gif(list_img, output_path, duration=200, loop=1, sort=Tr
     
     # sort by name 
     if sort:
-        image_files.sort(key=lambda x: int(os.path.basename(x).replace("f", "").replace(".png", "")))
+        list_img.sort(key=lambda x: int(os.path.basename(x).replace("f", "").replace("generated_image_",'').replace(".png", "")))
 
     # Create a list to hold the image objects
     images = []
@@ -25,6 +25,7 @@ def aggregate_images_to_gif(list_img, output_path, duration=200, loop=1, sort=Tr
         image = Image.open(filename)
         images.append(image)
     
+
     images[0].save(
         output_path,
         save_all=True,

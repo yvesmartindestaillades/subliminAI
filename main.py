@@ -2,6 +2,7 @@ from src.generate_conditional_image import generate_conditional_image
 from src.text2image import text2image
 from src.prompt_variation import prompt_variation
 from src.morphing import generate_morphing_between_images
+from src.gif_maker import aggregate_images_to_gif
 
 import shutil, os
 
@@ -11,9 +12,9 @@ if __name__ == "__main__":
     # Save the image
     image.save("hidden-message.png")
 
-    user_prompt = "A beautiful italian landscape. Houses, trees, a river and a bridge."
+    user_prompt = "A forest full of mystery and magic. Elves and fairies live here. A blue river with red stones."
 
-    prompt_variations = prompt_variation(user_prompt, n_variations=5)
+    prompt_variations = prompt_variation(user_prompt, n_variations=10)
 
     # remove /img folder
     shutil.rmtree("img")
@@ -31,4 +32,13 @@ if __name__ == "__main__":
         images_for_morphing.append(out_name)
 
     # morphing between images
-    # generate_morphing_between_images(images_for_morphing)
+    generate_morphing_between_images(images_for_morphing)
+
+    # turn images into gif
+    # list images
+    img = os.listdir("img")
+    image_files = ["img/" + i for i in img if i.endswith(".png")]
+    
+    # save gif
+    os.makedirs("out", exist_ok=True)
+    aggregate_images_to_gif(image_files, "out/output.gif", duration=10, loop=0)
