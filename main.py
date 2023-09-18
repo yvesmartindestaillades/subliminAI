@@ -1,7 +1,7 @@
 from src.generate_conditional_image import generate_conditional_image
 from src.text2image import text2image
 from src.prompt_variation import prompt_variation
-from morphing import generate_morphing_between_images
+from src.morphing import generate_morphing_between_images
 
 
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     user_prompt = "A beautiful italian landscape. Houses, trees, a river and a bridge."
 
-    prompt_variations = prompt_variation(user_prompt, n_variations=5)
+    prompt_variations = prompt_variation(user_prompt, n_variations=10)
 
     images_for_morphing = []
     for idx, prompt in enumerate(prompt_variations):
@@ -26,4 +26,4 @@ if __name__ == "__main__":
         images_for_morphing.append(out_name)
 
     # morphing between images
-    generate_morphing_between_images(images_for_morphing)
+    # generate_morphing_between_images(images_for_morphing)
