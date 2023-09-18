@@ -38,7 +38,7 @@ def call_replicate_api(
     """
     with open(image_path, "rb") as file:
         response = replicate.run(
-            "andreasjansson/qrcode:78f9ae9a2f745f2946ee682f6cc86f7c5b97b3c06cf9c0b672cc474e1ebd725f",
+            "andreasjansson/qrcode:75d51a73fce3c00de31ed9ab4358c73e8fc0f627dc8ce975818e653317cb919b",
             input={
                 "prompt": prompt,
                 "negative_prompt": "ugly, disfigured, low quality, blurry, nsfw",

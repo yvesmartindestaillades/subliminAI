@@ -17,8 +17,9 @@ if __name__ == "__main__":
     prompt_variations = prompt_variation(user_prompt, n_variations=10)
 
     # remove /img folder
-    shutil.rmtree("img")
-    os.makedirs("img")  
+    if os.path.exists("img"):
+        shutil.rmtree("img")
+    os.makedirs("img")
 
     images_for_morphing = []
     for idx, prompt in enumerate(prompt_variations):
