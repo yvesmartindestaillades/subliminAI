@@ -222,6 +222,12 @@ class Morpher:
                 ],
             ]
         )
+
+        # Add a small diagonal matrix
+        epsilon = 1e-5
+        tempLeftMatrix += np.eye(tempLeftMatrix.shape[0]) * epsilon
+        tempRightMatrix += np.eye(tempRightMatrix.shape[0]) * epsilon
+
         lefth = np.linalg.solve(tempLeftMatrix, targetVertices)
         righth = np.linalg.solve(tempRightMatrix, targetVertices)
         leftH = np.array(
@@ -370,12 +376,6 @@ def initmorph(startimgpath, endimgpath, featuregridsize, subpixel, showfeatures,
         ),
     ]
 
-    print(
-        "\r\nSubsequence init time: "
-        + "{0:.2f}".format(time.time() - timerstart)
-        + " s "
-    )
-
     return morphers
 
 
@@ -393,9 +393,6 @@ def save_morphed_frame(image: np.ndarray, frame_count: int, output_prefix: str) 
 
     # Save the image
     cv2.imwrite(filename, image)
-
-    # Log the operation
-    print(f"{filename} saved, dimensions {image.shape}")
 
 
 def apply_median_filter(image: np.ndarray, smoothing: int) -> np.ndarray:
@@ -447,7 +444,6 @@ def morph_process(
             * timer_elapsed
             / (morphed_frame.shape[0] * morphed_frame.shape[1])
         )
-        print(f"Time: {timer_elapsed:.2f} s; μs/pixel: {us_per_pixel:.2f}")
 
 
 ####
@@ -472,7 +468,6 @@ def batchmorph(
         morph_process(morph_params, framerate, outimgprefix, subpixel, smoothing)
 
     total_elapsed_time = time.time() - totaltimerstart
-    print(f"\r\nDone. Total time: {total_elapsed_time:.2f} s")
 
 
 def generate_morphing_between_images(
@@ -480,7 +475,7 @@ def generate_morphing_between_images(
 ):
     batchmorph(
         imgs=path_to_images,
-        featuregridsize=20,
+        featuregridsize=16,
         subpixel=1,
         showfeatures=False,
         framerate=10,
