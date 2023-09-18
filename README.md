@@ -30,3 +30,9 @@ control_strength: 0.8
 ```bash
 python main.py -t "AI Arts & Crafts Hackathon" -p "Craft an artistic representation of a landscape graced by mountains and the flow of serene rivers." -n 3 -c 0.95
 ```
+
+```bash
+python main.py -t "Thanks" -p "Capture the grandeur of natural architecture amidst soaring peaks and winding rivers." -n 1 -c 1.8
+```
+
+![figure](./figures/example.png)
