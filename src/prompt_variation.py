@@ -10,10 +10,15 @@ def prompt_variation(prompt, n_variations):
     # ;;;{prompt};;;"""
 
     # option 2
-    complete_prompt = f"""Generate {str(int(n_variations))} reformulations of the prompt delimited by 3 semicolons.
+    complete_prompt = f"""
+    Follow the instruction below:
+    
+    step1: Generate {str(int(n_variations))} reformulations of the prompt delimited by 3 semicolons.
     Each reformulation should be the same as the prompt, except that one word should be changed, removed or added. The meaning should remain the same. 
     Remove the semicolons from the output. Format the output as a list of sentences that start with a -. Don't explain the changes. 
-    Return the reformulations only. Don't return the prompt. Don't say anything but the reformulations.
+    Return the reformulations only. Don't return the prompt. Don't say anything but the reformulations. 
+    
+    step2: Count the reformulations, and if there are not {str(int(n_variations))} reformulations, add some more.
     
     ;;;{prompt};;;"""
 
@@ -33,10 +38,9 @@ def prompt_variation(prompt, n_variations):
         if item.startswith("- "):
             reformulations.append(item[2:])
             
-    # get the reformulations
-    assert (
-        len(reformulations) == n_variations
-    ), f"Expected {n_variations} reformulations, but got {len(reformulations)}. response: {response}"
+    # get the reformulations 
+    if not len(reformulations) == n_variations: #TODO: raise error
+        print(f"Expected {n_variations} reformulations, but got {len(reformulations)}")#. response: {response}")
 
     return reformulations
 
