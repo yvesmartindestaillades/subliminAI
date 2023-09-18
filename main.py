@@ -5,6 +5,7 @@ from src.text2image import text2image
 from src.prompt_variation import prompt_variation
 from src.morphing import generate_morphing_between_images
 from src.gif_maker import aggregate_images_to_gif
+from src import prompts
 
 import shutil, os
 
@@ -47,6 +48,8 @@ number_of_frames: {number_of_frames}"""
             control_net_strength=control_strength,
         )
         images_for_morphing.append(out_name)
+        if idx > max_img:
+            break
 
     os.makedirs("out", exist_ok=True)
     # morphing between images
